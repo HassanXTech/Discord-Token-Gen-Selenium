@@ -26,7 +26,11 @@ banner = f'''
 ██║  ██║██║ ╚████╔╝ ███████╗██║  ██║
 ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝                                                     
 🚀 Ultimate EVS Tool 🚀
-[+] Programmed By Anomus.LY'''
+[+] Programmed By Anomus.LY
+[+] Modified By Uzif
+[+] https://haxs.dev/
+
+'''
 
 
 
@@ -98,7 +102,7 @@ def print_templog(temp_email):
 
 def generate_yopmail_email():
     username = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-    email = f"{username}@1xp.fr"
+    email = f"{username}@gmail.com" # replaced whatever that was with gmail cuz that shi aint working 
     return username, email
 
 def generate_random_string(length=12):
@@ -131,39 +135,75 @@ def main():
             driver.find_element(By.NAME, "username").send_keys(username)
             driver.find_element(By.NAME, "password").send_keys(email)
             element_3 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, 'react-select-3-input')))
-            element_3.send_keys('15')
+            element_3.send_keys('1')
+            time.sleep(1) # added timer to assure syncronization
             element_3.send_keys(Keys.RETURN)
             element_2 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, 'react-select-2-input')))
-            element_2.send_keys('MAY')
+            element_2.send_keys('1')
+            time.sleep(1) # added timer to assure syncronization
             element_2.send_keys(Keys.RETURN)
             element_4 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, 'react-select-4-input')))
             element_4.send_keys('1995')
-            continue_button = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]')))
-            limit = account_ratelimit()
-            if limit > 1:
-                print(f'{timestamp()}{Fore.RED}[INFO] Ratelimited for {limit} seconds. Retrying after ratelimit disappears.')
-                time.sleep(limit)
-            continue_button.click()
-            print(f"{timestamp()} {Fore.BLUE}Please Solve Captcha Manually.{Style.RESET_ALL}")
-            while True:
+            time.sleep(1) # added timer to assure syncronization
+            element_2.send_keys(Keys.RETURN)
+
+             # yes discord we agree to the Terms of service
+             
+            try:
+                locator = (By.XPATH, "//input[@type='checkbox']")
+                
+                checkboxes = WebDriverWait(driver, 10).until(
+                    EC.presence_of_all_elements_located(locator)
+                )
+                
+                print(f"{timestamp()} {Fore.BLUE}Got {Style.RESET_ALL}{Fore.GREEN}{len(checkboxes)}{Style.RESET_ALL}{Fore.BLUE} checkboxes. Clicking...{Style.RESET_ALL}")
+
+                for checkbox in checkboxes:
+                    if not checkbox.is_selected():
+                        driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
+                        time.sleep(0.5)
+                        checkbox.click()
+                        
+                print(f"{timestamp()} {Fore.BLUE}Alright done.")
+
+            except Exception as e:
+                print(f"{timestamp()} {Fore.RED}Shit, got an error.. {e}")
+
+            finally:
+                continue_button = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]')))
+                limit = account_ratelimit()
+                if limit > 1:
+                    print(f'{timestamp()}{Fore.RED}[INFO] Ratelimited for {limit} seconds. Retrying after ratelimit disappears.')
+                    time.sleep(limit)
+                continue_button.click()
+                print(f"{timestamp()} {Fore.BLUE}Please Solve Captcha Manually.{Style.RESET_ALL}")
+                
+                # while True: nah
                 WebDriverWait(driver, 300).until(EC.url_contains("discord.com/channels/@me"))
                 print(f"{timestamp()} {Fore.GREEN}Redirected to the Discord page!{Style.RESET_ALL}")
+
+                    
+                    # lets not verify any email here lol (too lazy to do it)
+                """
                 usernamebaba = email.split('@')[0]
                 driver.get(f"https://yopmail.com/en/?login={usernamebaba}")
                 print(f"{timestamp()} {Fore.BLUE}Navigate to Yopmail and verify email manually.{Style.RESET_ALL}")
                 print(f"{timestamp()} {Fore.BLUE}Once you've solved the CAPTCHA and clicked the verification link, Close the Browser to continue.{Style.RESET_ALL}")
+
                 while True:
                     try:
                         driver.title  
                     except Exception:
                         print(f"{timestamp()} {Fore.GREEN}Browser closed by the user. Proceeding...{Style.RESET_ALL}")
                         break
+                                                """
+                driver.quit()
+                print(f"{timestamp()} {Fore.BLUE}Please Solve Captcha Manually.{Style.RESET_ALL}")
                 success = login_and_fetch_token(email, email)
                 if success:
                     print(f"{timestamp()} {Fore.GREEN}Process complete. Restarting...{Style.RESET_ALL}")
                 else:
                     print(f"{timestamp()} {Fore.RED}Failed to fetch the token.{Style.RESET_ALL}")
-                break
 
         finally:
             if driver:
@@ -176,28 +216,40 @@ def main():
                     driver = None 
                     
 def login_and_fetch_token(email, password):
-    data = {"email": email, "password": password, "undelete": "false"}
+    data = {"login": email, "password": password, "undelete": "false"}
     headers = {
         "content-type": "application/json",
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36",
     }
-    r = requests.post("https://discord.com/api/v9/auth/login", json=data, headers=headers)
-    if r.status_code == 200:
-        token = r.json().get("token")
-        if token:
+    try:
+        r = requests.post("https://discord.com/api/v9/auth/login", json=data, headers=headers)
+        
+        if r.status_code == 200:
+            token = r.json().get("token")
+            if token:
+                print(f"{timestamp()} {Fore.GREEN}Token fetched: {token}{Style.RESET_ALL}")
+                with open("tokens.txt", "a") as f:
+                    f.write(f"{token}\n")
+                with open("evs.txt", "a") as f:
+                    f.write(f"{email}:{password}:{token}\n")
+                print(f"{timestamp()} {Fore.GREEN}Token Saved to evs.txt and tokens.txt{Style.RESET_ALL}")
+                return True
+        
+        elif "captcha-required" in r.text:
+            print(f"{timestamp()} {Fore.RED}Discord returned captcha, stopping retry.{Style.RESET_ALL}")
+            return False
             
-            print(f"{timestamp()} {Fore.GREEN}Token fetched: {token}{Style.RESET_ALL}")
-            with open("tokens.txt", "a") as f:
-                f.write(f"{token}\n")
-            with open("evs.txt", "a") as f:
-                f.write(f"{email}:{password}:{token}\n")
-            payload = {"content": f"{email}:{password}:{token}"}
-            print(f"{timestamp()} {Fore.GREEN}Token Saved to evs.txt and tokens.txt{Style.RESET_ALL}")
-            return True
-    elif "captcha-required" in r.text:
-        print(f"{timestamp()} {Fore.RED}Discord returned captcha, stopping retry.{Style.RESET_ALL}")
+        else:
+            print(f"{timestamp()} {Fore.RED}Failed to fetch token. Status Code: {r.status_code}")
+            print(f"{timestamp()} {Fore.YELLOW}Response: {r.text}")
+            return False
+
+    except requests.exceptions.RequestException as e:
+        print(f"{timestamp()} {Fore.RED}A connection error occurred: {e}")
         return False
-    return False
+        
+    return False 
+
 
 if __name__ == "__main__":
     main()
